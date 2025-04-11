@@ -1,0 +1,23 @@
+{
+ "packageName":"SoundSmart - 4 Zone Matrix",
+ "author":"VH",
+ "version":"1.1",
+ "minimumHEVersion":"2.4.1.151",
+ "dateReleased":"2025-04-11",
+ "releaseNotes":"First version pushed to HPM",
+ "communityLink":"RA",
+ "drivers": [
+  {
+     "id":"746fb785-b220-460f-9f0b-fc02a9beadac",
+     "name":"SoundSmart - 4 Zone Audio Matrix",
+     "location":"https://raw.githubusercontent.com/hhorigian/hubitat_SoundSmart_4Zonas/refs/heads/main/Hubitat_TRATO_SoundSmart_4Zonas_Parent.groovy",
+     "required":true
+  },
+  {
+     "id":"92e9fc96-2d22-4755-a5a1-404e2cb91696",
+     "name":"SoundSmart - 4 Zone Child Device",
+     "location":"https://raw.githubusercontent.com/hhorigian/hubitat_SoundSmart_4Zonas/refs/heads/main/Hubitat_TRATO_SoundSmart_4Zonas_Child.groovy",
+     "required":true
+  }
+  ]
+}
