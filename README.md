@@ -13,3 +13,7 @@ Dentro do Dashboard, no CSS, pode colocar essas configurações para apagar os c
 {display: none;}
 .trackDescription { visibility: hidden; }
 
+
+Exemplo do dashboard. Tem o arquivo aqui no github. 
+
+<img width="1417" alt="image" src="https://github.com/user-attachments/assets/4f4c8efe-4744-4656-b205-b53baad0b421" />
