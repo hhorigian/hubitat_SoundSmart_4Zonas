@@ -1,6 +1,6 @@
 /**
- *  Hubitat - SoundSmart 4-Zone Audio Matrix Driver
- *  Version 2.1
+ *  Hubitat - SoundSmart - 4Zone Audio Matrix Driver
+ *  
  *
  *  Features:
  *  - Power status monitoring (PWON/PWOFF)
@@ -12,12 +12,13 @@
  *  - Child device support for each zone
  *
  *
- *  1.0  - 24/03/2025  VH Beta 1.0 
+ *  1.0  - 24/03/2025  VH Beta 1.0
+ *  1.1  - 10/04/2025  VH Added Child Devices fix.
 */
 
 metadata {
     definition (
-        name: "SoundSmart 4-Zone Audio Matrix", 
+        name: "SoundSmart - 4 Zone Audio Matrix", 
         namespace: "TRATO", 
         author: "VH", 
         singleThreaded: true
@@ -25,8 +26,7 @@ metadata {
         capability "Switch"
         capability "Initialize"
         capability "Refresh"
-        capability "AudioVolume"
-        //capability "MusicPlayer"        
+        //capability "AudioVolume"
         
         // Zone control commands
         command "zoneOn", [[name:"zone*", type: "NUMBER", description: "Zone number (1-4)"]]
@@ -37,8 +37,10 @@ metadata {
         command "zoneVolumeDown", [[name:"zone*", type: "NUMBER", description: "Zone number (1-4)"]]
         command "zoneMuteToggle", [[name:"zone*", type: "NUMBER", description: "Zone number (1-4)"]]
         command "setZoneInput", [[name:"zone*", type: "NUMBER", description: "Zone number (1-4)"],
-                               [name:"input*", type: "NUMBER", description: "Input number (1-4)"]]
-        command "setAllZonesInput", [[name:"input*", type: "NUMBER", description: "Input number (1-4)"]]
+                               [name:"input*", type: "ENUM", description: "Input selection", 
+                                constraints: ["Input#1", "Input#2", "Input#3", "Input#4"]]]
+        command "setAllZonesInput", [[name:"input*", type: "ENUM", description: "Input selection", 
+                                    constraints: ["Input#1", "Input#2", "Input#3", "Input#4"]]]
         command "saveScene", [[name:"scene*", type: "NUMBER", description: "Scene number (0-9)"]]
         command "recallScene", [[name:"scene*", type: "NUMBER", description: "Scene number (0-9)"]]
         command "checkPowerStatus"
@@ -46,15 +48,14 @@ metadata {
         command "updateChildDevice", [[name:"zone*", type: "NUMBER", description: "Zone number (1-4)"],
                                     [name:"attribute*", type: "STRING", description: "Attribute name"],
                                     [name:"value*", type: "STRING", description: "Attribute value"]]
-		command "defaultzones" //puts all inputs in corresponding zones (1-1, 2-2)        
-        command "componentOn", [[name:"childDevice", type: "DEVICE"]]
-        command "componentOff", [[name:"childDevice", type: "DEVICE"]]
-        command "componentSetVolume", [[name:"childDevice", type: "DEVICE"], [name:"volume", type: "NUMBER"]]
-        command "componentVolumeUp", [[name:"childDevice", type: "DEVICE"]]
-        command "componentVolumeDown", [[name:"childDevice", type: "DEVICE"]]
-        command "componentMute", [[name:"childDevice", type: "DEVICE"]]
-        command "componentSetInput", [[name:"childDevice", type: "DEVICE"], [name:"input", type: "NUMBER"]]
-            
+        command "defaultzones" //puts all inputs in corresponding zones (1-1, 2-2)        
+        //command "componentOn", [[name:"childDevice", type: "DEVICE"]]
+        //command "componentOff", [[name:"childDevice", type: "DEVICE"]]
+        //command "componentSetVolume", [[name:"childDevice", type: "DEVICE"], [name:"volume", type: "NUMBER"]]
+        //command "componentVolumeUp", [[name:"childDevice", type: "DEVICE"]]
+        //command "componentVolumeDown", [[name:"childDevice", type: "DEVICE"]]
+        //command "componentMute", [[name:"childDevice", type: "DEVICE"]]
+        //command "componentSetInput", [[name:"childDevice", type: "DEVICE"], [name:"input", type: "ENUM", constraints: ["Input#1", "Input#2", "Input#3", "Input#4"]]]
         
         // Attributes
         attribute "powerStatus", "string" // on/off
@@ -65,33 +66,40 @@ metadata {
         attribute "zone1Status", "string"
         attribute "zone1Volume", "number"
         attribute "zone1Mute", "string"
-        attribute "zone1Input", "number"
+        attribute "zone1Input", "string"
         attribute "zone2Status", "string"
         attribute "zone2Volume", "number"
         attribute "zone2Mute", "string"
-        attribute "zone2Input", "number"
+        attribute "zone2Input", "string"
         attribute "zone3Status", "string"
         attribute "zone3Volume", "number"
         attribute "zone3Mute", "string"
-        attribute "zone3Input", "number"
+        attribute "zone3Input", "string"
         attribute "zone4Status", "string"
         attribute "zone4Volume", "number"
         attribute "zone4Mute", "string"
-        attribute "zone4Input", "number"
+        attribute "zone4Input", "string"
     }
 
-    preferences {
-        input "device_IP_address", "text", title: "SoundSmart IP Address", required: true 
-        input "device_port", "number", title: "IP Port", required: true, defaultValue: 2000
-        input "checkInterval", "number", title: "Status Check Interval (seconds)", defaultValue: 90, required: true
-        input "responseTimeout", "number", title: "Response Timeout (seconds)", defaultValue: 10, required: true
-        input name: "logEnable", type: "bool", title: "Enable debug logging", defaultValue: false
-        input name: "logInfo", type: "bool", title: "Show Info Logs?", defaultValue: true
-        input name: "enableNotifications", type: "bool", title: "Enable Notifications?", defaultValue: false
-        input name: "autoCreateChildren", type: "bool", title: "Auto-create child devices?", defaultValue: false
-	    input name: "statusUpdateInterval", type: "number", title: "Status Update Interval (seconds)", defaultValue: 30, required: true
-        
-    }
+	preferences {
+    input "device_IP_address", "text", title: "SoundSmart IP Address", required: true 
+    input "device_port", "number", title: "IP Port", required: true, defaultValue: 2000
+    input "checkInterval", "number", title: "Status Check Interval (seconds)", defaultValue: 90, required: true
+    input "responseTimeout", "number", title: "Response Timeout (seconds)", defaultValue: 10, required: true
+    input name: "logEnable", type: "bool", title: "Enable debug logging", defaultValue: false
+    input name: "logInfo", type: "bool", title: "Show Info Logs?", defaultValue: true
+    input name: "enableNotifications", type: "bool", title: "Enable Notifications?", defaultValue: false
+    input name: "autoCreateChildren", type: "bool", title: "Auto-create child devices?", defaultValue: false
+    input name: "statusUpdateInterval", type: "number", title: "Status Update Interval (seconds)", defaultValue: 30, required: true
+    
+    // Add these new inputs for custom input names
+    input name: "input1Name", type: "text", title: "Input #1 Name", defaultValue: "Input#1", required: false
+    input name: "input2Name", type: "text", title: "Input #2 Name", defaultValue: "Input#2", required: false
+    input name: "input3Name", type: "text", title: "Input #3 Name", defaultValue: "Input#3", required: false
+    input name: "input4Name", type: "text", title: "Input #4 Name", defaultValue: "Input#4", required: false
+	}
+    
+    
 }
 
 def installed() {
@@ -140,13 +148,19 @@ def initialize() {
         runIn(checkInterval, "connectionCheck")
         runIn(statusUpdateInterval, "periodicStatusUpdate") // Add status update schedule
         
-        
     } catch (Exception e) {
         logError("Connection failed: ${e.message}")
         markDeviceOffline()
         runIn(60, "initialize") // Retry after 60 seconds
     }
 }
+
+
+private getInputName(inputNum) {
+    def prefName = "input${inputNum}Name"
+    return settings[prefName] ?: "Input#${inputNum}"
+}
+
 
 // Create child devices for each zone
 def createChildDevices() {
@@ -157,7 +171,7 @@ def createChildDevices() {
             if (!getChildDevice(childDni)) {
                 def childDevice = addChildDevice(
                     "TRATO", // Using the same namespace as parent
-                    "SoundSmart Zone Child Device", 
+                    "SoundSmart - 4 Zone Child Device", 
                     childDni,
                     [
                         name: "${device.displayName} Zone ${i}",
@@ -165,10 +179,10 @@ def createChildDevices() {
                         isComponent: false
                     ]
                 )
-                childDevice.sendEvent(name: "mute", value: "off")
+                childDevice.sendEvent(name: "mute", value: "unmuted")
                 childDevice.sendEvent(name: "volume", value: 0)
                 childDevice.sendEvent(name: "switch", value: "off")
-                childDevice.sendEvent(name: "input", value: 1)
+                childDevice.sendEvent(name: "input", value: "Input#1")
                 logInfo("Created child device for Zone ${i}")
             } else {
                 logDebug("Child device for Zone ${i} already exists")
@@ -179,14 +193,12 @@ def createChildDevices() {
     }
 }
 
-
 // Command to DefaultInputs 
 def defaultzones() {
     log.debug "Setting All Zones to Default Inputs"
     def command = "All#.\r\n"
     sendCommand(command)
 }
-
 
 // Update child device attributes
 def updateChildDevice(zone, attribute, value) {
@@ -206,8 +218,6 @@ def startStatusChecker() {
     runIn(checkInterval, "checkPowerStatus") // Schedule next check
 }
 
-
-
 def periodicStatusUpdate() {
     logDebug("Running periodic status update")
     try {
@@ -222,7 +232,6 @@ def periodicStatusUpdate() {
         runIn(statusUpdateInterval, "periodicStatusUpdate")
     }
 }
-
 
 def checkPowerStatus() {
     if (state.checkingPower) {
@@ -314,40 +323,42 @@ private parseZoneLine(String fullMessage) {
         def zoneNum = zone.toInteger()
         def zoneAttr = "zone${zone}"
     
-          
         // Check for input assignment (01->001)
         if (line.contains("->")) {
             def inputPart = line.find(/\d+->(\d+)/)
             if (inputPart) {
                 def input = inputPart.split(/->/)[1]
                 def inputNum = input.toInteger()
-                sendEvent(name: "${zoneAttr}Input", value: inputNum)
-                updateChildDevice(zoneNum, "input", inputNum)
-                logDebug("Zone ${zone} input set to ${inputNum}")
+                def inputName = "Input#${inputNum}"
+                sendEvent(name: "${zoneAttr}Input", value: inputName)
+                updateChildDevice(zoneNum, "input", inputName)  //Alterado o campo de input para inputName
+                logDebug("Zone ${zone} input set to ${inputName}")
             }
         }
-        
-      else if (line.contains("Volume")) {
+        else if (line.contains("Volume")) {
             def volume = line.find(/Volume\s+(\d+)/) { match, vol -> vol }?.toInteger()
             if (volume != null) {
-		        def percent = convertDeviceVolumeToPercent(volume)
+                def percent = convertDeviceVolumeToPercent(volume)
                 sendEvent(name: "${zoneAttr}Volume", value: percent)
                 updateChildDevice(zoneNum, "volume", percent)
-      			logDebug("Zone ${zone} volume set to ${percent}% (device value: ${volume}), ")
-                
+                logDebug("Zone ${zone} volume set to ${percent}% (device value: ${volume})")
             }
-    }
-          else if (line.contains("Mute")) {
-				def muteStatus = line.find(/Mute\s+(\w+)/) { match, status -> status }?.toLowerCase()
-                if (muteStatus) {
-                sendEvent(name: "${zoneAttr}Mute", value: muteStatus)
-                updateChildDevice(zoneNum, "mute", muteStatus)
-                logDebug("Zone ${zone} mute ${muteStatus}")
+        }
+        else if (line.contains("Mute")) {
+            def muteStatus = line.find(/Mute\s+(\w+)/) { match, status -> status }?.toLowerCase()
+            if (muteStatus) {
+                if (muteStatus == "off") {
+                    mutevalue = "unmuted"}
+                if (muteStatus == "on") {
+                    mutevalue = "muted"}
+                
+                sendEvent(name: "${zoneAttr}Mute", value: mutevalue)//muteStatus
+                updateChildDevice(zoneNum, "mute", mutevalue)
+                logDebug("Zone ${zone} mute ${mutevalue}")
             }
         } 
-	}
-}//func private    
-
+    }
+}
 
 // Command to POWER ON
 def on() {
@@ -365,6 +376,10 @@ def off() {
     sendCommand(command)
     sendEvent(name: "powerStatus", value: "off")
     sendEvent(name: "switch", value: "off")
+}
+
+def setVolume() {
+    
 }
 
 // Zone control commands
@@ -410,18 +425,38 @@ def zoneMuteToggle(zone) {
 
 def setZoneInput(zone, input) {
     validateZone(zone)
-    validateInput(input)
-    sendCommand("${input}A${zone}.\r\n")
-    logInfo("Zone ${zone} input set to ${input}")
-    updateChildDevice(zone.toInteger(), "input", input)
+    // Check if input is in format "Input#X" or just the number
+    def inputNum = (input instanceof String && input.startsWith("Input#")) ? 
+                   input.replace("Input#", "").toInteger() : 
+                   input.toInteger()
+    validateInput(inputNum)
+    
+    // Get the display name for the input
+    def inputName = getInputName(inputNum)
+    
+    sendCommand("${inputNum}A${zone}.\r\n")
+    logInfo("Zone ${zone} input set to ${inputName}")
+    
+    // Update child device with both the numeric input and display name
+    updateChildDevice(zone.toInteger(), "input", inputNum)
+    updateChildDevice(zone.toInteger(), "inputName", inputName)
 }
 
+
 def setAllZonesInput(input) {
-    validateInput(input)
-    sendCommand("${input}All.\r\n")
-    logInfo("All zones input set to ${input}")
+    def inputNum = (input instanceof String && input.startsWith("Input#")) ? 
+                  input.replace("Input#", "").toInteger() : 
+                  input.toInteger()
+    validateInput(inputNum)
+    
+    def inputName = getInputName(inputNum)
+    
+    sendCommand("${inputNum}All.\r\n")
+    logInfo("All zones input set to ${inputName}")
+    
     (1..4).each { zone ->
-        updateChildDevice(zone, "input", input)
+        updateChildDevice(zone, "input", inputNum)
+        updateChildDevice(zone, "inputName", inputName)
     }
 }
 
@@ -527,8 +562,6 @@ def logsOff() {
     device.updateSetting("logEnable", [value:"false", type:"bool"])
 }
 
-
-
 /**
  *  Child Device Component Commands
  *  These methods handle commands coming from child devices
@@ -556,7 +589,6 @@ void componentVolumeUp(cd) {
     }
 }
 
-
 void componentVolumeDown(cd) {
     def zone = getZoneNumberFromDNI(cd.deviceNetworkId)
     if (zone) {
@@ -576,7 +608,6 @@ void componentMute(cd) {
         logError("Could not determine zone from child device ${cd.deviceNetworkId}")
     }
 }
-
 
 // Handle on command from child device
 void componentOn(cd) {
@@ -604,6 +635,9 @@ void componentSetInput(cd, input) {
     def zone = getZoneNumberFromDNI(cd.deviceNetworkId)
     if (zone) {
         logDebug("Child device ${cd.deviceNetworkId} for Zone ${zone} requested input change to ${input}")
+        log.info "Cd = " + cd + " +Zone = " + zone + " input = " + input
+        //def inputNum = input.replace("Input#", "").toInteger()
+        log.info "chegou no inputnum = " + input
         setZoneInput(zone, input)
     } else {
         logError("Could not determine zone from child device ${cd.deviceNetworkId}")
@@ -614,13 +648,13 @@ void componentSetInput(cd, input) {
 private Integer getZoneNumberFromDNI(dni) {
     try {
         def zone = dni?.toString()?.split("-zone")?.last()
+        log.info "entrou na funcao do getzone e zone = " + zone
         return zone?.isInteger() ? zone.toInteger() : null
     } catch (Exception e) {
         logError("Error parsing zone from DNI ${dni}: ${e.message}")
         return null
     }
 }
-
 
 // Convert 0-100% to 0-32 device value
 private Integer convertPercentToDeviceVolume(percent) {
@@ -633,4 +667,3 @@ private Integer convertDeviceVolumeToPercent(deviceVolume) {
     deviceVolume = Math.max(0, Math.min(32, deviceVolume.toInteger()))
     return Math.round(deviceVolume * 100 / 32)
 }
-
