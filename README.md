@@ -42,3 +42,10 @@ Button: 4
 Vai colocar o Input 4, na Zona 2.
 
 
+------
+**Para saber o Input que está tocando em uma determinada zona: **
+Adicionar um device, e colocar ele do tipo Attribute. Na lista, seleccionar o atributo:  INPUT. 
+
+<img width="1167" alt="image" src="https://github.com/user-attachments/assets/5726b3b0-c9e6-4995-935f-dd9cc013df2b" />
+
+
