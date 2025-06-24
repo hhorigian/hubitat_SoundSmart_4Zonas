@@ -18,3 +18,30 @@ Dentro do Dashboard, no CSS, pode colocar essas configurações para apagar os c
 Exemplo do dashboard. Tem o arquivo aqui no github. 
 
 <img width="1417" alt="image" src="https://github.com/user-attachments/assets/4f4c8efe-4744-4656-b205-b53baad0b421" />
+
+Para uso dele: 
+Precisa usar "Buttons" (Botões). 
+
+No caso, o device vai ser a "ZONA", e o numero de botão vai ser o INPUT. 
+
+**Exemplo 1:
+**
+
+Device: Zone 1
+Button: 1 
+
+Vai colocar o Input 1, na Zona 1. 
+
+
+<img width="1346" alt="image" src="https://github.com/user-attachments/assets/9d5331a9-2013-4d18-bced-96a8590a6797" />
+
+
+**Exemplo 2:
+**
+
+Device: Zone 2
+Button: 4 
+
+Vai colocar o Input 4, na Zona 2.
+
+
