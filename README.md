@@ -32,7 +32,7 @@ Button: 1
 Vai colocar o Input 1, na Zona 1. 
 
 <img width="1346" alt="image" src="https://github.com/user-attachments/assets/9d5331a9-2013-4d18-bced-96a8590a6797" />
-
+<br>
 **Exemplo 2:**
 
 Device: Zone 2
