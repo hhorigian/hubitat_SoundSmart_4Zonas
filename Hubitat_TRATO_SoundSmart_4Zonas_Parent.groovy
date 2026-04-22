@@ -338,10 +338,16 @@ private parseZoneLine(String fullMessage) {
         else if (line.contains("Volume")) {
             def volume = line.find(/Volume\s+(\d+)/) { match, vol -> vol }?.toInteger()
             if (volume != null) {
-                def percent = convertDeviceVolumeToPercent(volume)
-                sendEvent(name: "${zoneAttr}Volume", value: percent)
-                updateChildDevice(zoneNum, "volume", percent)
-                logDebug("Zone ${zone} volume set to ${percent}% (device value: ${volume})")
+                def lockKey = "zone${zoneNum}VolumeLockUntil"
+                if (state[lockKey] && now() < state[lockKey]) {
+                    logDebug("Zone ${zoneNum} volume update suppressed (command in progress)")
+                } else {
+                    state.remove(lockKey)
+                    def percent = convertDeviceVolumeToPercent(volume)
+                    sendEvent(name: "${zoneAttr}Volume", value: percent)
+                    updateChildDevice(zoneNum, "volume", percent)
+                    logDebug("Zone ${zone} volume set to ${percent}% (device value: ${volume})")
+                }
             }
         }
         else if (line.contains("Mute")) {
@@ -402,19 +408,25 @@ def setZoneVolume(zone, percent) {
     def deviceVolume = convertPercentToDeviceVolume(percent)
     sendCommand("${zone}Vol${deviceVolume}.\r\n")
     logInfo("Zone ${zone} volume set to ${percent}% (device value: ${deviceVolume})")
-    updateChildDevice(zone.toInteger(), "volume", percent) // Store percent value in child
+    updateChildDevice(zone.toInteger(), "volume", percent)
+    state["zone${zone.toInteger()}VolumeLockUntil"] = now() + 1500
+    runIn(2, "queryStatus")
 }
 
 def zoneVolumeUp(zone) {
     validateZone(zone)
     sendCommand("${zone}VolUp.\r\n")
     logInfo("Zone ${zone} volume increased")
+    state["zone${zone.toInteger()}VolumeLockUntil"] = now() + 1500
+    runIn(2, "queryStatus")
 }
 
 def zoneVolumeDown(zone) {
     validateZone(zone)
     sendCommand("${zone}VolDown.\r\n")
     logInfo("Zone ${zone} volume decreased")
+    state["zone${zone.toInteger()}VolumeLockUntil"] = now() + 1500
+    runIn(2, "queryStatus")
 }
 
 def zoneMuteToggle(zone) {
