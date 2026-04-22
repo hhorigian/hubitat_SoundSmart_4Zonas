@@ -1,10 +1,10 @@
 {
  "packageName":"SoundSmart - 4 Zone Matrix",
  "author":"VH",
- "version":"1.1",
+ "version":"1.2",
  "minimumHEVersion":"2.4.1.151",
- "dateReleased":"2025-04-11",
- "releaseNotes":"First version pushed to HPM",
+ "dateReleased":"2026-04-23",
+ "releaseNotes":"Fixed Volume Issue",
  "communityLink":"RA",
  "drivers": [
   {
