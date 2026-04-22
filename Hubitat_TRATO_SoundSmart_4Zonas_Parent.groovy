@@ -14,8 +14,9 @@
  *
  *  1.0  - 24/03/2025  VH Beta 1.0
  *  1.1  - 10/04/2025  VH Added Child Devices fix.
- * 1.2 - 23/04/2026 VH Added input name customization and inputName attribute to child devices.
-*/
+ *  1.2 - 23/04/2026 Fixed Lowering Volume Bug
+ 
+ */
 
 metadata {
     definition (
