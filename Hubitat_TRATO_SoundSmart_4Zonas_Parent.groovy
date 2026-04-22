@@ -14,6 +14,7 @@
  *
  *  1.0  - 24/03/2025  VH Beta 1.0
  *  1.1  - 10/04/2025  VH Added Child Devices fix.
+ * 1.2 - 23/04/2026 VH Added input name customization and inputName attribute to child devices.
 */
 
 metadata {
@@ -406,27 +407,28 @@ def zoneOff(zone) {
 def setZoneVolume(zone, percent) {
     validateZone(zone)
     def deviceVolume = convertPercentToDeviceVolume(percent)
-    sendCommand("${zone}Vol${deviceVolume}.\r\n")
-    logInfo("Zone ${zone} volume set to ${percent}% (device value: ${deviceVolume})")
+    def cmd = "${zone}Vol${deviceVolume}."
+    logInfo("Zone ${zone} volume set to ${percent}% (device value: ${deviceVolume}) | CMD sent: [${cmd}]")
+    sendCommand("${cmd}\r\n")
     updateChildDevice(zone.toInteger(), "volume", percent)
-    state["zone${zone.toInteger()}VolumeLockUntil"] = now() + 1500
-    runIn(2, "queryStatus")
+    state["zone${zone.toInteger()}VolumeLockUntil"] = now() + 5000
+    runIn(5, "queryStatus")
 }
 
 def zoneVolumeUp(zone) {
     validateZone(zone)
     sendCommand("${zone}VolUp.\r\n")
     logInfo("Zone ${zone} volume increased")
-    state["zone${zone.toInteger()}VolumeLockUntil"] = now() + 1500
-    runIn(2, "queryStatus")
+    state["zone${zone.toInteger()}VolumeLockUntil"] = now() + 5000
+    runIn(5, "queryStatus")
 }
 
 def zoneVolumeDown(zone) {
     validateZone(zone)
     sendCommand("${zone}VolDown.\r\n")
     logInfo("Zone ${zone} volume decreased")
-    state["zone${zone.toInteger()}VolumeLockUntil"] = now() + 1500
-    runIn(2, "queryStatus")
+    state["zone${zone.toInteger()}VolumeLockUntil"] = now() + 5000
+    runIn(5, "queryStatus")
 }
 
 def zoneMuteToggle(zone) {
