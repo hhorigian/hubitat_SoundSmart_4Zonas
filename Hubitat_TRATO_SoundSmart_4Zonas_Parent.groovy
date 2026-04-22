@@ -407,7 +407,8 @@ def zoneOff(zone) {
 def setZoneVolume(zone, percent) {
     validateZone(zone)
     def deviceVolume = convertPercentToDeviceVolume(percent)
-    def cmd = "${zone}Vol${deviceVolume}."
+    def volStr = deviceVolume.toString().padLeft(2, '0')
+    def cmd = "${zone}Vol${volStr}."
     logInfo("Zone ${zone} volume set to ${percent}% (device value: ${deviceVolume}) | CMD sent: [${cmd}]")
     sendCommand("${cmd}\r\n")
     updateChildDevice(zone.toInteger(), "volume", percent)
