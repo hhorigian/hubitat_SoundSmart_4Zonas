@@ -92,7 +92,7 @@ metadata {
     input name: "logInfo", type: "bool", title: "Show Info Logs?", defaultValue: true
     input name: "enableNotifications", type: "bool", title: "Enable Notifications?", defaultValue: false
     input name: "autoCreateChildren", type: "bool", title: "Auto-create child devices?", defaultValue: false
-    input name: "statusUpdateInterval", type: "number", title: "Status Update Interval (seconds)", defaultValue: 30, required: true
+    input name: "statusUpdateInterval", type: "number", title: "Status Update Interval (seconds)", defaultValue: 60, required: true
     
     // Add these new inputs for custom input names
     input name: "input1Name", type: "text", title: "Input #1 Name", defaultValue: "Input#1", required: false
@@ -304,11 +304,11 @@ def parse(String message) {
     
     if (state.checkingPower) {
         state.checkingPower = false
-        sendEvent(name: "lastStatusCheck", value: new Date().format("yyyy-MM-dd HH:mm:ss"))
+        state.lastStatusCheck = new Date().format("yyyy-MM-dd HH:mm:ss")
     }
-    
+
     state.lastmessage = newmsg2
-    log.info "Last Msg: " + newmsg2
+    logDebug("Last Msg: " + newmsg2)
 }
 
 private parseZoneLine(String fullMessage) {
