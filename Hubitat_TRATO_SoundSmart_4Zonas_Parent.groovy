@@ -15,6 +15,7 @@
  *  1.0  - 24/03/2025  VH Beta 1.0
  *  1.1  - 10/04/2025  VH Added Child Devices fix.
  *  1.2 - 23/04/2026 Fixed Lowering Volume Bug
+ *  1.3 - 19/05/2026 Added periodic status update to ensure UI stays in sync
  
  */
 
@@ -202,12 +203,14 @@ def defaultzones() {
     sendCommand(command)
 }
 
-// Update child device attributes
+// Update child device attributes — only fires event when value actually changes
 def updateChildDevice(zone, attribute, value) {
     def childDevice = getChildDevice("${device.deviceNetworkId}-zone${zone}")
     if (childDevice) {
-        childDevice.sendEvent(name: attribute, value: value)
-        logDebug("Updated child device Zone ${zone} ${attribute} to ${value}")
+        if (childDevice.currentValue(attribute)?.toString() != value?.toString()) {
+            childDevice.sendEvent(name: attribute, value: value)
+            logDebug("Updated child device Zone ${zone} ${attribute} to ${value}")
+        }
     } else {
         logDebug("No child device found for Zone ${zone}")
     }
@@ -332,8 +335,8 @@ private parseZoneLine(String fullMessage) {
                 def input = inputPart.split(/->/)[1]
                 def inputNum = input.toInteger()
                 def inputName = "Input#${inputNum}"
-                sendEvent(name: "${zoneAttr}Input", value: inputName)
-                updateChildDevice(zoneNum, "input", inputName)  //Alterado o campo de input para inputName
+                sendEventIfChanged("${zoneAttr}Input", inputName)
+                updateChildDevice(zoneNum, "input", inputName)
                 logDebug("Zone ${zone} input set to ${inputName}")
             }
         }
@@ -346,7 +349,7 @@ private parseZoneLine(String fullMessage) {
                 } else {
                     state.remove(lockKey)
                     def percent = convertDeviceVolumeToPercent(volume)
-                    sendEvent(name: "${zoneAttr}Volume", value: percent)
+                    sendEventIfChanged("${zoneAttr}Volume", percent)
                     updateChildDevice(zoneNum, "volume", percent)
                     logDebug("Zone ${zone} volume set to ${percent}% (device value: ${volume})")
                 }
@@ -359,8 +362,8 @@ private parseZoneLine(String fullMessage) {
                     mutevalue = "unmuted"}
                 if (muteStatus == "on") {
                     mutevalue = "muted"}
-                
-                sendEvent(name: "${zoneAttr}Mute", value: mutevalue)//muteStatus
+
+                sendEventIfChanged("${zoneAttr}Mute", mutevalue)
                 updateChildDevice(zoneNum, "mute", mutevalue)
                 logDebug("Zone ${zone} mute ${mutevalue}")
             }
@@ -523,15 +526,21 @@ private sendCommand(String command) {
     interfaces.rawSocket.sendMessage(command)
 }
 
+private void sendEventIfChanged(String name, value) {
+    if (device.currentValue(name)?.toString() != value?.toString()) {
+        sendEvent(name: name, value: value)
+    }
+}
+
 private handlePowerOn() {
-    sendEvent(name: "powerStatus", value: "on")
-    sendEvent(name: "switch", value: "on")
+    sendEventIfChanged("powerStatus", "on")
+    sendEventIfChanged("switch", "on")
     logInfo("Device power is ON")
 }
 
 private handlePowerOff() {
-    sendEvent(name: "powerStatus", value: "off")
-    sendEvent(name: "switch", value: "off")
+    sendEventIfChanged("powerStatus", "off")
+    sendEventIfChanged("switch", "off")
     logInfo("Device power is OFF")
 }
 
