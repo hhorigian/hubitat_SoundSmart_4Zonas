@@ -207,8 +207,10 @@ def defaultzones() {
 def updateChildDevice(zone, attribute, value) {
     def childDevice = getChildDevice("${device.deviceNetworkId}-zone${zone}")
     if (childDevice) {
-        if (childDevice.currentValue(attribute)?.toString() != value?.toString()) {
+        def stateKey = "child_z${zone}_${attribute}"
+        if (state[stateKey]?.toString() != value?.toString()) {
             childDevice.sendEvent(name: attribute, value: value)
+            state[stateKey] = value?.toString()
             logDebug("Updated child device Zone ${zone} ${attribute} to ${value}")
         }
     } else {
@@ -527,8 +529,10 @@ private sendCommand(String command) {
 }
 
 private void sendEventIfChanged(String name, value) {
-    if (device.currentValue(name)?.toString() != value?.toString()) {
+    def stateKey = "ev_${name}"
+    if (state[stateKey]?.toString() != value?.toString()) {
         sendEvent(name: name, value: value)
+        state[stateKey] = value?.toString()
     }
 }
 
